@@ -45,10 +45,12 @@ public class Player : MonoBehaviour {
         }
     }
 
+    private Animator animator;
+
 	// Use this for initialization
 	void Start () {
-		
-	}
+        animator = GetComponent<Animator>();
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -56,13 +58,32 @@ public class Player : MonoBehaviour {
             return;
 
         if (Input.GetKeyDown(KeyCode.A))
+        {
             Move(Vector2.left);
-
+            GetComponent<Animator>().SetLayerWeight(0, 1);
+            GetComponent<Animator>().SetLayerWeight(1, 0);
+            GetComponent<Animator>().SetLayerWeight(2, 0);
+            GetComponent<Animator>().SetLayerWeight(3, 0);
+            GetComponent<Animator>().speed = 1;
+        }
         if (Input.GetKeyDown(KeyCode.W))
+        {
             Move(Vector2.up);
+            GetComponent<Animator>().SetLayerWeight(0, 0);
+            GetComponent<Animator>().SetLayerWeight(1, 0);
+            GetComponent<Animator>().SetLayerWeight(2, 1);
+            GetComponent<Animator>().SetLayerWeight(3, 0);
+            GetComponent<Animator>().speed = 1;
+            
+        }
 
         if (Input.GetKeyDown(KeyCode.S))
+        {
             Move(Vector2.down);
+            GetComponent<Animator>().speed = 0;
+            GetComponent<Animator>().ForceStateNormalizedTime(0f);
+
+        }
 
         if (Input.GetKeyDown(KeyCode.D))
             Move(Vector2.right);
