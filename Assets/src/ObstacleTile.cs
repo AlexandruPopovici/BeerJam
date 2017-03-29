@@ -6,6 +6,7 @@ using UnityEngine;
 public class ObstacleTile : Tile {
 
     private SpriteRenderer _renderer;
+    private static Sprite rubbleSprite;
 
     private bool __shallPass = false;
     public override bool ShallPass
@@ -19,7 +20,9 @@ public class ObstacleTile : Tile {
     // Use this for initialization
     void Start () {
         _renderer = GetComponent<SpriteRenderer>();
-
+        if(rubbleSprite == null){
+            rubbleSprite = Resources.Load<Sprite>("Prefabs/rubble");
+        }
     }
 	
 	// Update is called once per frame
@@ -36,7 +39,7 @@ public class ObstacleTile : Tile {
     {
         yield return new WaitForSeconds(2f);
         __shallPass = true;
-        _renderer.color = Color.red;
+        _renderer.sprite = rubbleSprite;
         callback();
     }
 }

@@ -45,11 +45,23 @@ public class Player : MonoBehaviour {
         }
     }
 
-    private Animator animator;
+    private bool __isMoving;
+    public bool IsMoving
+    {
+        get{
+            return __isMoving;
+        }
+        set{
+            __isMoving = value;
+        }
+    }
 
+    private Animator animator;
+    private int animationLayer;
 	// Use this for initialization
 	void Start () {
         animator = GetComponent<Animator>();
+        SampleAnimation(1, 0f);
     }
 	
 	// Update is called once per frame
@@ -57,53 +69,91 @@ public class Player : MonoBehaviour {
         if (Busy)
             return;
 
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKey(KeyCode.A))
         {
-            Move(Vector2.left);
-            GetComponent<Animator>().SetLayerWeight(0, 1);
-            GetComponent<Animator>().SetLayerWeight(1, 0);
-            GetComponent<Animator>().SetLayerWeight(2, 0);
-            GetComponent<Animator>().SetLayerWeight(3, 0);
-            GetComponent<Animator>().speed = 1;
+            animationLayer = 2;
+            if(Move(Vector2.left))
+                SetAnimationLayer(2);
         }
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKey(KeyCode.W))
         {
-            Move(Vector2.up);
-            GetComponent<Animator>().SetLayerWeight(0, 0);
-            GetComponent<Animator>().SetLayerWeight(1, 0);
-            GetComponent<Animator>().SetLayerWeight(2, 1);
-            GetComponent<Animator>().SetLayerWeight(3, 0);
-            GetComponent<Animator>().speed = 1;
-            
+            animationLayer = 0;
+            if(Move(Vector2.up))
+                SetAnimationLayer(0);
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKey(KeyCode.S))
         {
-            Move(Vector2.down);
-            GetComponent<Animator>().speed = 0;
-            GetComponent<Animator>().ForceStateNormalizedTime(0f);
-
+            animationLayer = 1;
+            if(Move(Vector2.down))
+                SetAnimationLayer(1);
         }
 
-        if (Input.GetKeyDown(KeyCode.D))
-            Move(Vector2.right);
+        if (Input.GetKey(KeyCode.D)){
+            animationLayer = 3;
+            if(Move(Vector2.right))
+                SetAnimationLayer(3);
+        }
 
         if (Input.GetKeyDown(KeyCode.Space))
             Dig();
 
         if (Input.GetKeyDown(KeyCode.E))
             Sniff();
+
+        if(Input.GetKeyDown(KeyCode.Return))
+            Generator.Restart();
     }
 
-    private void Move(Vector2 direction)
+    //I'm pretty sure this is NOT how mechanim is supposed to work, but learning how it should, aint nobody got time fo that!
+    private void SetAnimationLayer(int layer){
+        for(int i = 0 ; i < 4; i++){
+            if(i == layer)
+                animator.SetLayerWeight(i, 1);
+            else
+                animator.SetLayerWeight(i, 0);
+        }
+        animator.speed = 1f;
+    }
+
+    //I'm pretty sure this is NOT how mechanim is supposed to work, but learning how it should, aint nobody got time fo that!
+    private void SampleAnimation(int layer, float time){
+        SetAnimationLayer(layer);
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
+        animator.Play (stateInfo.nameHash, layer, time);
+        animator.speed = 0f;
+    }
+
+    private bool Move(Vector2 direction)
     {
-        Debug.Log("Move");
-        if (Generator.CanMove((int)TilePosition.x, (int)TilePosition.y, direction))
-        {
-            transform.Translate(direction * 1.28f);
-            TilePosition += direction;
+        bool ret = Generator.CanMove((int)TilePosition.x, (int)TilePosition.y, direction);
+        if (ret)
+        {   
+            if(!IsMoving)
+                StartCoroutine(_move(direction));
+        }
+        else{
+            if(!IsMoving){
+                SampleAnimation(animationLayer, 0f);
+            }
         }
         lookDir = direction;
+        return ret;
+    }
+
+    private IEnumerator _move(Vector2 direction){
+        IsMoving = true;
+        Vector3 target = transform.position + (Vector3)direction * 1.28f;
+        float distance = Vector3.Distance(target, transform.position);
+        while(distance > 0.05f){
+            transform.Translate(direction * 1.28f * Time.deltaTime * 3f);
+            distance = Vector3.Distance(target, transform.position);
+            yield return new WaitForEndOfFrame();
+        }
+        transform.position = target;
+        TilePosition += direction;
+        SampleAnimation(animationLayer, 0f);
+        IsMoving = false;
     }
 
     private void Dig()
@@ -119,8 +169,6 @@ public class Player : MonoBehaviour {
     public void SetArrow(Vector3 dir)
     {
         float angle = Mathf.Acos(Vector3.Dot(Vector3.left, dir));
-        //Debug.Log(dir);
-        //Debug.Log(angle * Mathf.Rad2Deg);
         StartCoroutine(animateArrow(angle * Mathf.Rad2Deg * Mathf.Sign(-dir.y)));
     }
 
@@ -128,16 +176,16 @@ public class Player : MonoBehaviour {
     {
         targetArrow.rotation = Quaternion.Euler(0, 0, angle);
         Color color = targetArrow.GetComponent<SpriteRenderer>().color;
-        while(color.a < 0.8f)
+        while(color.a < 0.5f)
         {
-            color.a += Time.deltaTime * 0.5f;
+            color.a += Time.deltaTime;// * 0.5f;
             targetArrow.GetComponent<SpriteRenderer>().color = color;
             yield return new WaitForEndOfFrame();
         }
         yield return new WaitForSeconds(1f);
         while (color.a > 0.0f)
         {
-            color.a -= Time.deltaTime * 0.5f;
+            color.a -= Time.deltaTime;// * 0.5f;
             targetArrow.GetComponent<SpriteRenderer>().color = color;
             yield return new WaitForEndOfFrame();
         }

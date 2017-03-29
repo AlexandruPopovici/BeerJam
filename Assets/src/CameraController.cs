@@ -15,10 +15,12 @@ public class CameraController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        Vector3 goalPos = target.position;
-        //goalPos.y = transform.position.y;
-        Vector3 pos = Vector3.SmoothDamp(transform.position, goalPos, ref velocity, smoothTime);
-        transform.position = new Vector3(pos.x, pos.y, -1f);
+        if(target != null){
+            Vector3 goalPos = target.position;
+            //goalPos.y = transform.position.y;
+            Vector3 pos = Vector3.SmoothDamp(transform.position, goalPos, ref velocity, smoothTime);
+            transform.position = new Vector3(pos.x, pos.y, -1f);
+        }
 
     }
 }

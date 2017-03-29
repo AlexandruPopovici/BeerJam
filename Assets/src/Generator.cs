@@ -32,7 +32,7 @@ public class Generator : MonoBehaviour {
     private float targetBite;
 
     static System.Random random = new System.Random();
-
+    static MazeGeneratorHelper mazeHelper;
     // Use this for initialization
     private void Awake()
     {
@@ -58,13 +58,6 @@ public class Generator : MonoBehaviour {
                 digText = GameObject.Find("Dig").GetComponent<Text>();
             digText.color = activeColor;
         };
-        hidePower = powers[2];
-        hidePower.PowerAvailableCallback = () =>
-        {
-            if (hideText == null)
-                hideText = GameObject.Find("Hide").GetComponent<Text>();
-            hideText.color = activeColor;
-        };
 
         CameraController cameraControls = Camera.main.gameObject.AddComponent<CameraController>();
         cameraControls.target = player.transform;
@@ -75,11 +68,20 @@ public class Generator : MonoBehaviour {
 
     private void Start()
     {
-        Init();
+        mazeHelper = GetComponent<MazeGeneratorHelper>();
+        mazeHelper.onMazeGenerated = ()=>{
+            this.maze = GetComponent<MazeGeneratorHelper>().texture;
+            Init();
+        };
+        mazeHelper.Generate();
     }
+
 
 	// Update is called once per frame
 	void Update () {
+        if(player == null)
+            return;
+
         if(!gotStash && player.TilePosition.x == stash.TilePosition.x && player.TilePosition.y == stash.TilePosition.y)
         {
             gotStash = true;
@@ -100,8 +102,8 @@ public class Generator : MonoBehaviour {
             currentBite = Mathf.Lerp(oldVal, currentBite, Time.deltaTime*2f);
         }
         Camera.main.GetComponent<Dark>().bite = currentBite;
-        Debug.Log("Distance: " + (dist / 10f).ToString());
-        Debug.Log("Bite: " + currentBite.ToString());
+        //Debug.Log("Distance: " + (dist / 10f).ToString());
+        //Debug.Log("Bite: " + currentBite.ToString());
     }
 
     public void GenerateGround()
@@ -147,7 +149,6 @@ public class Generator : MonoBehaviour {
             Vector2 randomPlayerPoint_n = new Vector2(randomX / 64f, randomY / 64f);
             Vector2 randomPlayerPoint = new Vector2(randomPlayerPoint_n.x * this.maze.width, randomPlayerPoint_n.y * this.maze.height);
             int index = (int)Mathf.Round(randomPlayerPoint.x + this.maze.width * randomPlayerPoint.y);
-            Debug.Log(index);
             if(tiles[index].r == 1f)
             {
                 origin = new Vector2(randomX, randomY);
@@ -201,7 +202,7 @@ public class Generator : MonoBehaviour {
     {
         var newPos = new Vector2(x + direction.x, y + direction.y);
         int index = (int)Mathf.Round(newPos.x + mazeWidth * newPos.y);
-        if (wall[index] == null || wall[index].ShallPass)
+        if ((index >= 0 && index < wall.Length) && (wall[index] == null || wall[index].ShallPass))
             return true;
         return false;
     }
@@ -266,5 +267,22 @@ public class Generator : MonoBehaviour {
                 randomDir.y = 1;
         }
         return randomDir;
+    }
+
+    public static void Restart(){
+        foreach(Tile t in ground)
+            Destroy(t.gameObject);
+        foreach(Tile w in wall)
+            if(w != null)
+                Destroy(w.gameObject);
+        tiles = null;
+        Destroy(player.gameObject);
+        Destroy(monsta.gameObject);
+        if(stash != null)
+            Destroy(stash.gameObject);
+        player = null;
+        monsta = null;
+        stash = null;
+        mazeHelper.Generate();
     }
 }
