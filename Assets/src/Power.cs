@@ -10,7 +10,7 @@ public class Power : MonoBehaviour {
     private float counter;
 
     public Action PowerAvailableCallback;
-    private bool __active;
+    private bool __active = true;
     public bool Active
     {
         get

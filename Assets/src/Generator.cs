@@ -24,7 +24,7 @@ public class Generator : MonoBehaviour {
     static readonly Color inActiveColor = new Color(0.2f, 0.2f, 0.2f, 1);
     static Text traceText;
     static Text digText;
-    static Text hideText;
+    static Text restartText;
 
     private static Vector2 origin;
     private static bool gotStash = false;
@@ -40,6 +40,16 @@ public class Generator : MonoBehaviour {
     
 
 	void Init () {
+        if (traceText == null)
+            traceText = GameObject.Find("Trace").GetComponent<Text>();
+        if (digText == null)
+            digText = GameObject.Find("Dig").GetComponent<Text>();
+        if (restartText == null)
+            restartText = GameObject.Find("Restart").GetComponent<Text>();
+        traceText.color = activeColor;
+        digText.color = activeColor;
+        restartText.color = activeColor;
+
         tiles = this.maze.GetPixels();
         GenerateGround();
         player = SpawnPlayer();
@@ -47,15 +57,13 @@ public class Generator : MonoBehaviour {
         tracePower = powers[0];
         tracePower.PowerAvailableCallback = () =>
         {
-            if (traceText == null)
-                traceText = GameObject.Find("Trace").GetComponent<Text>();
+            
             traceText.color = activeColor;
         };
         digPower = powers[1];
         digPower.PowerAvailableCallback = () =>
         {
-            if (digText == null)
-                digText = GameObject.Find("Dig").GetComponent<Text>();
+            
             digText.color = activeColor;
         };
 
@@ -88,6 +96,7 @@ public class Generator : MonoBehaviour {
             Destroy(stash.gameObject);
             TrySniff();
             Instantiate(Resources.Load("Prefabs/Exit"), ground[(int)(origin.x + origin.y * mazeWidth)].transform.position, Quaternion.identity);
+            monsta.wait = Monster.ALERTED_WAIT;
         }
         if(gotStash && player.TilePosition.x == origin.x && player.TilePosition.y == origin.y)
         {
@@ -102,7 +111,14 @@ public class Generator : MonoBehaviour {
             currentBite = Mathf.Lerp(oldVal, currentBite, Time.deltaTime*2f);
         }
         Camera.main.GetComponent<Dark>().bite = currentBite;
-        //Debug.Log("Distance: " + (dist / 10f).ToString());
+        if(player.TilePosition.x == monsta.TilePosition.x && player.TilePosition.y == monsta.TilePosition.y){
+            Debug.Log("DEAD");
+            Camera.main.GetComponent<Dark>().bite = 0f;
+            monsta.Roaming = false;
+            player.Busy = true;
+            Restart();
+        }
+
         //Debug.Log("Bite: " + currentBite.ToString());
     }
 

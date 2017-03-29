@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Monster : MonoBehaviour {
+    public const float NORMAL_WAIT = 0.75f;
+    public const float ALERTED_WAIT = 0.35f;
 
-    float wait = 1f;
+    public float wait = NORMAL_WAIT;
     float waitBehaviour = 3f;
     float acc = 0;
     float accBehaviour = 0;
