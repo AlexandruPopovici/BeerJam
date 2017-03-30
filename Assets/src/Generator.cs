@@ -15,6 +15,7 @@ public class Generator : MonoBehaviour {
     public static Player player;
     public static Monster monsta;
     public static Stash stash;
+    public static GameObject exit;
 
     static Power tracePower;
     static Power digPower;
@@ -27,8 +28,10 @@ public class Generator : MonoBehaviour {
     static Text restartText;
 
     private static Vector2 origin;
-    private static bool gotStash = false;
+    private static bool gotStash = false, wyrdFlag = false;
 
+    public static Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();
+    
     private float targetBite;
 
     static System.Random random = new System.Random();
@@ -57,13 +60,11 @@ public class Generator : MonoBehaviour {
         tracePower = powers[0];
         tracePower.PowerAvailableCallback = () =>
         {
-            
             traceText.color = activeColor;
         };
         digPower = powers[1];
         digPower.PowerAvailableCallback = () =>
         {
-            
             digText.color = activeColor;
         };
 
@@ -72,10 +73,14 @@ public class Generator : MonoBehaviour {
         monsta = SpawnMonster();
         monsta.Roaming = true;
         stash = SpawnStash();
+        Camera.main.GetComponent<AudioSource>().clip = audioClips["ambience1"];
+        Camera.main.GetComponent<AudioSource>().Play();
+        Camera.main.GetComponent<Dark>().enabled = true;
     }
 
     private void Start()
     {
+        LoadSounds();
         mazeHelper = GetComponent<MazeGeneratorHelper>();
         mazeHelper.onMazeGenerated = ()=>{
             this.maze = GetComponent<MazeGeneratorHelper>().texture;
@@ -95,12 +100,21 @@ public class Generator : MonoBehaviour {
             gotStash = true;
             Destroy(stash.gameObject);
             TrySniff();
-            Instantiate(Resources.Load("Prefabs/Exit"), ground[(int)(origin.x + origin.y * mazeWidth)].transform.position, Quaternion.identity);
+            exit = Instantiate(Resources.Load("Prefabs/Exit"), ground[(int)(origin.x + origin.y * mazeWidth)].transform.position, Quaternion.identity) as GameObject;
             monsta.wait = Monster.ALERTED_WAIT;
+            player.GetComponent<Animator>().runtimeAnimatorController = Resources.Load("Prefabs/worker_sack_anim") as RuntimeAnimatorController;
+            player.Speed = 4f;
+            Camera.main.GetComponent<AudioSource>().clip = audioClips["ambience2"];
+            Camera.main.GetComponent<AudioSource>().Play();
         }
-        if(gotStash && player.TilePosition.x == origin.x && player.TilePosition.y == origin.y)
+        if(!wyrdFlag && gotStash && player.TilePosition.x == origin.x && player.TilePosition.y == origin.y)
         {
             Debug.Log("WON");
+            Camera.main.GetComponent<Dark>().bite = 0.5f;
+            monsta.Roaming = false;
+            player.Busy = true;
+            wyrdFlag = true;
+            StartCoroutine(_Ending());
         }
         float dist = Vector3.Distance(player.transform.position, monsta.transform.position);
         targetBite = dist;
@@ -118,8 +132,6 @@ public class Generator : MonoBehaviour {
             player.Busy = true;
             Restart();
         }
-
-        //Debug.Log("Bite: " + currentBite.ToString());
     }
 
     public void GenerateGround()
@@ -223,7 +235,7 @@ public class Generator : MonoBehaviour {
         return false;
     }
 
-    public static void TryDig()
+    public static bool TryDig()
     {
         if (digPower.Use())
         {
@@ -237,8 +249,11 @@ public class Generator : MonoBehaviour {
                     player.Busy = false;
                 });
                 digText.color = inActiveColor;
+                return true;
             }
+            return false;
         }
+        return false;
     }
 
     public static void TrySniff()
@@ -296,9 +311,30 @@ public class Generator : MonoBehaviour {
         Destroy(monsta.gameObject);
         if(stash != null)
             Destroy(stash.gameObject);
+        Destroy(exit);
+        exit = null;
         player = null;
         monsta = null;
         stash = null;
+        gotStash = false;
         mazeHelper.Generate();
+    }
+
+    IEnumerator _Ending()
+    {
+        Camera.main.GetComponent<Dark>().enabled = false;
+        yield return new WaitForSeconds(2f);
+        Restart();
+    }
+
+    public void LoadSounds()
+    {
+        audioClips.Add("ambience1", Resources.Load("Audio/radakan - cave ambience") as AudioClip);
+        audioClips.Add("ambience2", Resources.Load("Audio/Iwan Gabovitch - Dark Ambience Loop") as AudioClip);
+        audioClips.Add("monster_ambient", Resources.Load("Audio/MonsterSoundTutorial") as AudioClip);
+        audioClips.Add("monster_close", Resources.Load("Audio/monster2") as AudioClip);
+        audioClips.Add("monster_kill", Resources.Load("Audio/monster3") as AudioClip);
+        audioClips.Add("pickaxe", Resources.Load("Audio/Pick Hitting Rock_fast") as AudioClip);
+        audioClips.Add("rubble", Resources.Load("Audio/Falling Rock") as AudioClip);
     }
 }

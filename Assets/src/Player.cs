@@ -56,11 +56,26 @@ public class Player : MonoBehaviour {
         }
     }
 
+    private float __speed = 3f;
+    public float Speed
+    {
+        get
+        {
+            return __speed;
+        }
+        set
+        {
+            __speed = value;
+        }
+    }
+
     private Animator animator;
     private int animationLayer;
+    private AudioSource audioSource;
 	// Use this for initialization
 	void Start () {
         animator = GetComponent<Animator>();
+        audioSource = GetComponentInChildren<AudioSource>();
         SampleAnimation(1, 0f);
     }
 	
@@ -143,10 +158,17 @@ public class Player : MonoBehaviour {
 
     private IEnumerator _move(Vector2 direction){
         IsMoving = true;
+        Vector3 start = transform.position;
         Vector3 target = transform.position + (Vector3)direction * 1.28f;
         float distance = Vector3.Distance(target, transform.position);
-        while(distance > 0.05f){
-            transform.Translate(direction * 1.28f * Time.deltaTime * 3f);
+        float tx = 0, ty = 0;
+        while(distance > 0.05f && tx <= 1.0 && ty <= 1.0f){
+            //Has a weird semi-linearity to it which looks nice
+            transform.Translate(direction * 1.28f * Time.deltaTime * Speed);
+            if(target.x - start.x != 0)
+                tx = (transform.position.x - start.x) / (target.x - start.x);
+            if(target.y - start.y != 0)
+                ty = (transform.position.y - start.y) / (target.y - start.y);
             distance = Vector3.Distance(target, transform.position);
             yield return new WaitForEndOfFrame();
         }
@@ -158,7 +180,10 @@ public class Player : MonoBehaviour {
 
     private void Dig()
     {
-        Generator.TryDig();
+        if (Generator.TryDig())
+        {
+            GetComponent<AudioSource>().Play();
+        }
     }
 
     private void Sniff()

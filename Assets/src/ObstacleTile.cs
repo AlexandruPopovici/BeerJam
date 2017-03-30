@@ -40,6 +40,7 @@ public class ObstacleTile : Tile {
         yield return new WaitForSeconds(2f);
         __shallPass = true;
         _renderer.sprite = rubbleSprite;
+        GetComponent<AudioSource>().Play();
         callback();
     }
 }

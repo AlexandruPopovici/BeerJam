@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Monster : MonoBehaviour {
-    public const float NORMAL_WAIT = 0.75f;
-    public const float ALERTED_WAIT = 0.35f;
+    public const float NORMAL_WAIT = 0.70f;
+    public const float ALERTED_WAIT = 0.55f;
 
     public float wait = NORMAL_WAIT;
     float waitBehaviour = 3f;
@@ -77,9 +77,6 @@ public class Monster : MonoBehaviour {
                 accBehaviour -= waitBehaviour;
             }
         }
-
-
-
 	}
 
     void UpdateMonsterRoam()
@@ -88,7 +85,6 @@ public class Monster : MonoBehaviour {
         Vector2 newPos = TilePosition + randomDir;
         newPos.x = Mathf.Clamp(newPos.x, 0, 64);
         newPos.y = Mathf.Clamp(newPos.y, 0, 64);
-        //Debug.Log(randomDir);
         transform.position = new Vector3(newPos.x * 1.28f, newPos.y * 1.28f, 0f);
         TilePosition = new Vector2(newPos.x, newPos.y);
     }
@@ -99,7 +95,6 @@ public class Monster : MonoBehaviour {
         dirProbability[1] = (float)random.NextDouble();
         dirProbability[2] = (float)random.NextDouble();
         dirProbability[3] = (float)random.NextDouble();
-        //Debug.Log(dirProbability[0].ToString() + "," + dirProbability[1].ToString() +"," + dirProbability[2].ToString() + "," + dirProbability[3].ToString());
     }
 
 }
