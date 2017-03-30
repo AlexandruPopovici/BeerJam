@@ -87,6 +87,9 @@ public class Generator : MonoBehaviour {
         Camera.main.GetComponent<AudioSource>().clip = audioClips["ambience1"];
         Camera.main.GetComponent<AudioSource>().Play();
         Camera.main.GetComponent<Dark>().enabled = true;
+
+        GameInfo.TracePowerState = true;
+        GameInfo.DigPowetState = true;
     }
 
     private void Start()
