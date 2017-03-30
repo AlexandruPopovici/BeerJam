@@ -44,11 +44,20 @@ public class Generator : MonoBehaviour {
 
 	void Init () {
         if (traceText == null)
+        {
             traceText = GameObject.Find("Trace").GetComponent<Text>();
+            traceText.text = "Trace: " + Player.TraceName();
+        }
         if (digText == null)
+        {
             digText = GameObject.Find("Dig").GetComponent<Text>();
+            digText.text = "Dig: " + Player.DigName();
+        }
         if (restartText == null)
+        {
             restartText = GameObject.Find("Restart").GetComponent<Text>();
+            restartText.text = "Reset: " + Player.GetResetName();
+        }
         traceText.color = activeColor;
         digText.color = activeColor;
         restartText.color = activeColor;
@@ -61,11 +70,13 @@ public class Generator : MonoBehaviour {
         tracePower.PowerAvailableCallback = () =>
         {
             traceText.color = activeColor;
+            GameInfo.TracePowerState = true;
         };
         digPower = powers[1];
         digPower.PowerAvailableCallback = () =>
         {
             digText.color = activeColor;
+            GameInfo.DigPowetState = true;
         };
 
         CameraController cameraControls = Camera.main.gameObject.AddComponent<CameraController>();
@@ -237,11 +248,11 @@ public class Generator : MonoBehaviour {
 
     public static bool TryDig()
     {
-        if (digPower.Use())
+        Vector2 targetTile = player.TilePosition + player.lookDir;
+        int index = (int)Mathf.Round(targetTile.x + mazeWidth * targetTile.y);
+        if (wall[index] != null)
         {
-            Vector2 targetTile = player.TilePosition + player.lookDir;
-            int index = (int)Mathf.Round(targetTile.x + mazeWidth * targetTile.y);
-            if (wall[index] != null)
+            if (digPower.Use())
             {
                 player.Busy = true;
                 wall[index].TearDown(() =>
@@ -249,6 +260,7 @@ public class Generator : MonoBehaviour {
                     player.Busy = false;
                 });
                 digText.color = inActiveColor;
+                GameInfo.DigPowetState = false;
                 return true;
             }
             return false;
@@ -265,6 +277,7 @@ public class Generator : MonoBehaviour {
             dir.Normalize();
             player.SetArrow(dir);
             traceText.color = inActiveColor;
+            GameInfo.TracePowerState = false;
         }
     }
 
@@ -329,12 +342,15 @@ public class Generator : MonoBehaviour {
 
     public void LoadSounds()
     {
-        audioClips.Add("ambience1", Resources.Load("Audio/radakan - cave ambience") as AudioClip);
-        audioClips.Add("ambience2", Resources.Load("Audio/Iwan Gabovitch - Dark Ambience Loop") as AudioClip);
-        audioClips.Add("monster_ambient", Resources.Load("Audio/MonsterSoundTutorial") as AudioClip);
-        audioClips.Add("monster_close", Resources.Load("Audio/monster2") as AudioClip);
-        audioClips.Add("monster_kill", Resources.Load("Audio/monster3") as AudioClip);
-        audioClips.Add("pickaxe", Resources.Load("Audio/Pick Hitting Rock_fast") as AudioClip);
-        audioClips.Add("rubble", Resources.Load("Audio/Falling Rock") as AudioClip);
+        if (audioClips.Count == 0)
+        {
+            audioClips.Add("ambience1", Resources.Load("Audio/radakan - cave ambience") as AudioClip);
+            audioClips.Add("ambience2", Resources.Load("Audio/Iwan Gabovitch - Dark Ambience Loop") as AudioClip);
+            audioClips.Add("monster_ambient", Resources.Load("Audio/MonsterSoundTutorial") as AudioClip);
+            audioClips.Add("monster_close", Resources.Load("Audio/monster2") as AudioClip);
+            audioClips.Add("monster_kill", Resources.Load("Audio/monster3") as AudioClip);
+            audioClips.Add("pickaxe", Resources.Load("Audio/Pick Hitting Rock_fast") as AudioClip);
+            audioClips.Add("rubble", Resources.Load("Audio/Falling Rock") as AudioClip);
+        }
     }
 }

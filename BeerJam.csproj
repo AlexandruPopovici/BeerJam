@@ -145,6 +145,7 @@
     <Compile Include="Assets\ProceduralToolkit\RandomE.cs" />
     <Compile Include="Assets\ProceduralToolkit\TextureE.cs" />
     <Compile Include="Assets\ProceduralToolkit\Vector2Int.cs" />
+    <Compile Include="Assets\Scripts\TestInput.cs" />
     <Compile Include="Assets\src\Arrow.cs" />
     <Compile Include="Assets\src\CameraController.cs" />
     <Compile Include="Assets\src\Dark.cs" />
@@ -155,11 +156,11 @@
     <Compile Include="Assets\src\ObstacleTile.cs" />
     <Compile Include="Assets\src\Player.cs" />
     <Compile Include="Assets\src\Power.cs" />
-    <Compile Include="Assets\src\Space.cs" />
     <Compile Include="Assets\src\Stash.cs" />
     <Compile Include="Assets\src\Tile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Plugins\BeerFest\InControl\Assets\InControl\README\README.txt" />
     <None Include="Assets\ProceduralToolkit\Shaders\Diffuse Vertex Color.shader" />
     <None Include="Assets\ProceduralToolkit\Shaders\Gradient Skybox.shader" />
     <None Include="Assets\ProceduralToolkit\Shaders\Specular Vertex Color.shader" />

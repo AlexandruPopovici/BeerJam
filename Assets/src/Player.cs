@@ -78,46 +78,115 @@ public class Player : MonoBehaviour {
         audioSource = GetComponentInChildren<AudioSource>();
         SampleAnimation(1, 0f);
     }
-	
+
+    float stickThresh = 0.25f;
+    bool Left()
+    {
+        return Controls.DPadLeft || (Controls.RightStickX < -stickThresh) || (Controls.LeftStickX < -stickThresh);
+    }
+
+    bool Up()
+    {
+        return Controls.DPadUp || (Controls.RightStickY > stickThresh) || (Controls.LeftStickY > stickThresh);
+    }
+
+    bool Down()
+    {
+        return Controls.DPadDown || (Controls.RightStickY < -stickThresh) || (Controls.LeftStickY < -stickThresh);
+    }
+
+    bool Right()
+    {
+        return Controls.DPadRight || (Controls.RightStickX > stickThresh) || (Controls.LeftStickX > stickThresh);
+    }
+
+    bool Trace()
+    {
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return Controls.Action1;
+        else 
+            return Input.GetKeyDown(KeyCode.E);
+    }
+
+    bool _Dig()
+    {
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return Controls.Action2;
+        else
+            return Input.GetKeyDown(KeyCode.Space);
+    }
+
+    bool _Reset()
+    {
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return Controls.Reset;
+        else
+            return Input.GetKeyDown(KeyCode.Return);
+    }
+
+    public static string DigName()
+    {
+        //Didn't find predefined types
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return "B";
+        return "Space";
+    }
+
+    public static string TraceName()
+    {
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return "A";
+        return "E";
+    }
+
+    public static string GetResetName()
+    {
+        if (BeerFest.ActiveDevice.Name == "XBox One Controller")
+            return "Menu";
+        return "Enter";
+    }
+
 	// Update is called once per frame
 	void Update () {
         if (Busy)
             return;
-
-        if (Input.GetKey(KeyCode.A))
+        
+        if (Left())
         {
             animationLayer = 2;
             if(Move(Vector2.left))
                 SetAnimationLayer(2);
         }
-        if (Input.GetKey(KeyCode.W))
+        if (Up())
         {
             animationLayer = 0;
             if(Move(Vector2.up))
                 SetAnimationLayer(0);
         }
 
-        if (Input.GetKey(KeyCode.S))
+        if (Down())
         {
             animationLayer = 1;
             if(Move(Vector2.down))
                 SetAnimationLayer(1);
         }
 
-        if (Input.GetKey(KeyCode.D)){
+        if (Right())
+        {
             animationLayer = 3;
             if(Move(Vector2.right))
                 SetAnimationLayer(3);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (_Dig())
             Dig();
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Trace())
             Sniff();
 
-        if(Input.GetKeyDown(KeyCode.Return))
-            Generator.Restart();
+        if (_Reset())
+            Debug.Log("Robin's HARD RESET");
+            //Generator.Restart();
     }
 
     //I'm pretty sure this is NOT how mechanim is supposed to work, but learning how it should, aint nobody got time fo that!
